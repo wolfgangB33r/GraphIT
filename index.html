@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <title>MING - Monitoring Graph</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    
+        <script src="https://unpkg.com/3d-force-graph"></script>
+    </head>
+<body>
+    
+    <div class="container" >
+        <h4>Monitoring Graph</h4>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="inputGroup-sizing-default">Dynatrace Environment</span>
+            </div>
+            <input onchange="updateEnv()" type="text" id="diag-env" value="<YOUR-DT-URL>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+            &nbsp;
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">Api-Token (needs Entity v2 Scope)</span>
+            </div>
+            <input onchange="updateEnv()" type="password" id="diag-token" value="<YOUR-DT-TOKEN>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">    
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="inputGroup-sizing-default">Entity query</span>
+            </div>
+            <input onchange="updateQuery()" type="text" id="diag-query" value="type(HOST)" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+        </div> 
+    </div>
+
+    <div height="200px" width="50%" class="" id="3d-graph"></div>
+
+    <script>
+        YOUR_DT_API_URL = '';
+        YOUR_DT_API_TOKEN = '';
+
+        function loadEnv() {
+            // load env and token
+            document.getElementById("diag-env").value = localStorage.getItem('env')
+            document.getElementById("diag-token").value = localStorage.getItem('token')
+            YOUR_DT_API_URL = localStorage.getItem('env');
+            YOUR_DT_API_TOKEN = localStorage.getItem('token');
+        }
+
+        function updateEnv() {
+            YOUR_DT_API_TOKEN = document.getElementById("diag-token").value;
+            YOUR_DT_API_URL = document.getElementById("diag-env").value;
+            localStorage.setItem("token", YOUR_DT_API_TOKEN);
+            localStorage.setItem("env", YOUR_DT_API_URL);
+        }
+        
+        loadEnv();
+
+        // Random tree
+        const N = 3000;
+        const gData = {
+        nodes: [...Array(N).keys()].map(i => ({ id: i })),
+        links: [...Array(N).keys()]
+            .filter(id => id)
+            .map(id => ({
+            source: id,
+            target: Math.round(Math.random() * (id-1))
+            }))
+        };
+
+        const Graph = ForceGraph3D()
+        (document.getElementById('3d-graph'))
+            .graphData(gData);
+
+    </script>
+
+</body>
+</html>
