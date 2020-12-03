@@ -8,11 +8,9 @@
     
         <script src="https://unpkg.com/3d-force-graph"></script>
     </head>
-<body>
-    
+<body style="background-color:black;">
+    <div style="margin-top: 25px;"></div>
     <div class="container" >
-        <h4>GraphIT - Monitoring Graph</h4>
-
         <div class="input-group mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text" id="inputGroup-sizing-default">Dynatrace Environment</span>
@@ -30,6 +28,7 @@
             </div>
             <input onchange="query()" type="text" id="diag-query" value="type(HOST)" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
         </div> 
+       
     </div>
 
     <div height="200px" width="50%" class="" id="3d-graph"></div>
@@ -37,6 +36,7 @@
     <script>
         YOUR_DT_API_URL = '';
         YOUR_DT_API_TOKEN = '';
+        LIMIT = 500;
 
         function loadEnv() {
             // load env and token
@@ -55,9 +55,8 @@
         
         loadEnv();
 
-        // Random tree
         const N = 50;
-        const gData = {
+        gData = {
         nodes: [...Array(N).keys()].map(i => ({ id: i })),
         links: [...Array(N).keys()]
             .filter(id => id)
@@ -66,15 +65,76 @@
             target: Math.round(Math.random() * (id-1))
             }))
         };
+        entityIndex = {}
+        tempRel = []
 
         const Graph = ForceGraph3D()
         (document.getElementById('3d-graph'))
             .graphData(gData);
 
+
         function query() {
-            // /api/v2/entities
-            query = document.getElementById("diag-query").value;
-            console.log(query);
+            // clear graph first
+            gData = { nodes : [], links : [] }
+            entityIndex = {}
+            tempRel = []
+            // now fetch
+            q = document.getElementById("diag-query").value;
+            fetchGraph(q, pageResult)
+        }
+
+        function pageResult(graphJson, q, callback) {
+            // add partial result to graph 
+            console.log(graphJson);
+            graphJson['entities'].forEach(element => {
+                if(!entityIndex[element.entityId]) {
+                    gData.nodes.push({'id' : element.entityId, 'displayName' : element.displayName, 'group' : 'b'});
+                    entityIndex[element.entityId] = true;
+                }
+                if('fromRelationships' in element && 'calls' in element.fromRelationships) {
+                    element.fromRelationships.calls.forEach(rel => {
+                        tempRel.push({'source' : element.entityId, 'target' : rel.id});
+                    });
+                }
+                
+            });
+
+            // we do have to fetch the next page
+            if(graphJson['nextPageKey'] || gData.nodes.length > LIMIT) {
+                console.log("Oh I have to fetch again");
+                fetchGraph(q, callback, graphJson['nextPageKey'])
+            } else {
+                // only add those relationships to the graph where we also have the nodes in the result set
+                tempRel.forEach(rel => {
+                    if(rel.source in entityIndex && rel.target in entityIndex) {
+                        gData.links.push(rel);
+                    }
+                });
+
+                const Graph = ForceGraph3D()(document.getElementById('3d-graph')).graphData(gData).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
+                console.log("Yea finished!");
+            }
+        }
+
+        function fetchGraph(q, callback, nextPageKey) {
+            if(nextPageKey) {
+                url = YOUR_DT_API_URL + "/api/v2/entities?nextPageKey={npk}"
+                url = url.replace("{npk}", nextPageKey);
+            } else {
+                url = YOUR_DT_API_URL + "/api/v2/entities?fields=+fromRelationships&entitySelector={q}"
+                url = url.replace("{q}", q);
+            }
+            console.log(url);
+            var oReq = new XMLHttpRequest();
+            oReq.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    evjson = JSON.parse(oReq.responseText);
+                    callback(evjson, q, callback);
+                }
+            };
+            oReq.open("GET", encodeURI(url));
+            oReq.setRequestHeader("Authorization", "Api-Token " + YOUR_DT_API_TOKEN);
+            oReq.send();    
         }
 
     </script>
