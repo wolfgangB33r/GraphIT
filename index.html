@@ -105,7 +105,7 @@
         }
 
         function addEntityToGraph(json) {
-            console.log({'id' : json.entityId, 'displayName' : son.entityId.substring(0,json.entityId.search('-')) + " " + json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+            console.log({'id' : json.entityId, 'displayName' : json.entityId.substring(0,json.entityId.search('-')) + " " + json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
             // if we don't have the entity in our entityIndex already, we have to add the node to our graph
             if(!(json.entityId in entityIndex)) {
                 gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
