@@ -68,9 +68,7 @@
         entityIndex = {}
         tempRel = []
 
-        const Graph = ForceGraph3D()
-        (document.getElementById('3d-graph'))
-            .graphData(gData);
+        const Graph = ForceGraph3D()(document.getElementById('3d-graph')).graphData(gData).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
 
 
         function query() {
@@ -111,7 +109,7 @@
                     }
                 });
 
-                const Graph = ForceGraph3D()(document.getElementById('3d-graph')).graphData(gData).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
+                Graph.graphData(gData).refresh();
                 console.log("Yea finished!");
             }
         }
