@@ -68,7 +68,7 @@
         entityIndex = {}
         tempRel = []
 
-        const Graph = ForceGraph3D()(document.getElementById('3d-graph')).graphData(gData).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
+        const Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('3d-graph')).graphData(gData).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
 
 
         function query() {
@@ -86,7 +86,7 @@
             console.log(graphJson);
             graphJson['entities'].forEach(element => {
                 if(!entityIndex[element.entityId]) {
-                    gData.nodes.push({'id' : element.entityId, 'displayName' : element.displayName, 'group' : 'b'});
+                    gData.nodes.push({'id' : element.entityId, 'displayName' : element.displayName, 'group' : element.entityId.substring(0,element.entityId.search('-'))});
                     entityIndex[element.entityId] = true;
                 }
                 if('fromRelationships' in element && 'calls' in element.fromRelationships) {
@@ -108,9 +108,10 @@
                         gData.links.push(rel);
                     }
                 });
-
+                console.log(gData);
                 Graph.graphData(gData).refresh();
                 console.log("Yea finished!");
+
             }
         }
 
