@@ -68,8 +68,78 @@
         entityIndex = {}
         tempRel = []
 
-        const Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('3d-graph')).graphData(gData).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
+        const Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('3d-graph')).graphData(gData).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
 
+        function nodeLeftClick(node, event) {
+            fetchSingleEntity(node.id, addEntityToGraphFollow)
+        }
+
+        function addEntityToGraphFollow(json) {
+            console.log({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+            // if we don't have the entity in our entityIndex already, we have to add the node to our graph
+            if(!(json.entityId in entityIndex)) {
+                gData.nodes.push({'id' : json.entityId, 'displayName' : json.entityId.substring(0,json.entityId.search('-')) + " " + json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+                Graph.graphData(gData).refresh();
+                // store entity details in our entity index
+                entityIndex[json['entityId']] = json;
+            }
+            if('fromRelationships' in json) {
+                Object.keys(json.fromRelationships).forEach(relType => {
+                    json.fromRelationships[relType].forEach(rel => {
+                        if(!(rel.id in entityIndex)) {
+                            fetchSingleEntity(rel.id, addEntityToGraph)
+                        }
+                    });
+                }); 
+            }
+            if('toRelationships' in json) {
+                Object.keys(json.toRelationships).forEach(relType => {
+                    json.toRelationships[relType].forEach(rel => {
+                        if(!(rel.id in entityIndex)) {
+                            fetchSingleEntity(rel.id, addEntityToGraph)
+                        }
+                    });
+                });    
+            }
+            
+        }
+
+        function addEntityToGraph(json) {
+            console.log({'id' : json.entityId, 'displayName' : son.entityId.substring(0,json.entityId.search('-')) + " " + json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+            // if we don't have the entity in our entityIndex already, we have to add the node to our graph
+            if(!(json.entityId in entityIndex)) {
+                gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+                // store entity details in our entity index
+                entityIndex[json['entityId']] = json;
+                Graph.graphData(gData).refresh();
+            }
+            if('fromRelationships' in json) {
+                Object.keys(json.fromRelationships).forEach(relType => {
+                    json.fromRelationships[relType].forEach(rel => {
+                        if(rel.id in entityIndex && json.entityId in entityIndex) {
+                            gData.links.push({'source' : json.entityId, 'target' : rel.id, 'type' : relType});
+                            Graph.graphData(gData).refresh();
+                        } 
+                    });
+                });  
+            }
+            if('toRelationships' in json) {
+                Object.keys(json.toRelationships).forEach(relType => {
+                    json.toRelationships[relType].forEach(rel => {
+                        if(rel.id in entityIndex && json.entityId in entityIndex) {
+                            gData.links.push({'source' : rel.id, 'target' : json.entityId, 'type' : relType});
+                            Graph.graphData(gData).refresh();
+                        } 
+                    });
+                });   
+            }
+            // store entity details in our entity index
+            entityIndex[json['entityId']] = json;
+        }
+
+        function nodeRightClick(node, event) {
+            console.log("right click");
+        }
 
         function query() {
             // clear graph first
@@ -86,13 +156,16 @@
             console.log(graphJson);
             graphJson['entities'].forEach(element => {
                 if(!entityIndex[element.entityId]) {
-                    gData.nodes.push({'id' : element.entityId, 'displayName' : element.displayName, 'group' : element.entityId.substring(0,element.entityId.search('-'))});
+                    gData.nodes.push({'id' : element.entityId, 'displayName' : element.entityId.substring(0,element.entityId.search('-')) + " " + element.displayName, 'group' : element.entityId.substring(0,element.entityId.search('-'))});
                     entityIndex[element.entityId] = true;
                 }
-                if('fromRelationships' in element && 'calls' in element.fromRelationships) {
-                    element.fromRelationships.calls.forEach(rel => {
-                        tempRel.push({'source' : element.entityId, 'target' : rel.id});
+                if('fromRelationships' in element) {
+                    Object.keys(element.fromRelationships).forEach(relType => {
+                        element.fromRelationships[relType].forEach(rel => {
+                            tempRel.push({'source' : element.entityId, 'target' : rel.id, 'type' : relType});
+                        });
                     });
+                    
                 }
                 
             });
@@ -129,6 +202,22 @@
                 if (this.readyState == 4 && this.status == 200) {
                     evjson = JSON.parse(oReq.responseText);
                     callback(evjson, q, callback);
+                }
+            };
+            oReq.open("GET", encodeURI(url));
+            oReq.setRequestHeader("Authorization", "Api-Token " + YOUR_DT_API_TOKEN);
+            oReq.send();    
+        }
+
+        function fetchSingleEntity(entityId, callback) {
+            url = YOUR_DT_API_URL + "/api/v2/entities/{q}"
+            url = url.replace("{q}", entityId);
+            console.log(url);
+            var oReq = new XMLHttpRequest();
+            oReq.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    evjson = JSON.parse(oReq.responseText);
+                    callback(evjson);
                 }
             };
             oReq.open("GET", encodeURI(url));
