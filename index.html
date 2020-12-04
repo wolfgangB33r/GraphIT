@@ -78,7 +78,7 @@
             console.log({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
             // if we don't have the entity in our entityIndex already, we have to add the node to our graph
             if(!(json.entityId in entityIndex)) {
-                gData.nodes.push({'id' : json.entityId, 'displayName' : json.entityId.substring(0,json.entityId.search('-')) + " " + json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+                gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
                 Graph.graphData(gData).refresh();
                 // store entity details in our entity index
                 entityIndex[json['entityId']] = json;
@@ -105,7 +105,7 @@
         }
 
         function addEntityToGraph(json) {
-            console.log({'id' : json.entityId, 'displayName' : json.entityId.substring(0,json.entityId.search('-')) + " " + json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+            console.log({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
             // if we don't have the entity in our entityIndex already, we have to add the node to our graph
             if(!(json.entityId in entityIndex)) {
                 gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
@@ -156,7 +156,7 @@
             console.log(graphJson);
             graphJson['entities'].forEach(element => {
                 if(!entityIndex[element.entityId]) {
-                    gData.nodes.push({'id' : element.entityId, 'displayName' : element.entityId.substring(0,element.entityId.search('-')) + " " + element.displayName, 'group' : element.entityId.substring(0,element.entityId.search('-'))});
+                    gData.nodes.push({'id' : element.entityId, 'displayName' : element.displayName, 'group' : element.entityId.substring(0,element.entityId.search('-'))});
                     entityIndex[element.entityId] = true;
                 }
                 if('fromRelationships' in element) {
@@ -171,8 +171,8 @@
             });
 
             // we do have to fetch the next page
-            if(graphJson['nextPageKey'] || gData.nodes.length > LIMIT) {
-                console.log("Oh I have to fetch again");
+            if('nextPageKey' in graphJson && gData.nodes.length < LIMIT) {
+                console.log("Oh I have to fetch again" + gData.nodes.length  + " " + LIMIT);
                 fetchGraph(q, callback, graphJson['nextPageKey'])
             } else {
                 // only add those relationships to the graph where we also have the nodes in the result set
@@ -183,7 +183,7 @@
                 });
                 console.log(gData);
                 Graph.graphData(gData).refresh();
-                console.log("Yea finished!");
+                console.log("Yeah finished!");
 
             }
         }
