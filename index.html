@@ -9,6 +9,7 @@
         <script src="https://unpkg.com/3d-force-graph"></script>
     </head>
 <body style="background-color:black;">
+
     <div style="margin-top: 25px;"></div>
     <div class="container" >
         <div class="input-group mb-3">
@@ -18,17 +19,16 @@
             <input onchange="updateEnv()" type="text" id="diag-env" value="<YOUR-DT-URL>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
             &nbsp;
             <div class="input-group-prepend">
-                <span class="input-group-text" id="inputGroup-sizing-default">Api-Token (needs Entity v2 Scope)</span>
+                <span class="input-group-text" id="inputGroup-sizing-default">Api-Token (needs Entity v2 Read Scope)</span>
             </div>
             <input onchange="updateEnv()" type="password" id="diag-token" value="<YOUR-DT-TOKEN>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">    
         </div>
         <div class="input-group mb-3">
             <div class="input-group-prepend">
-              <span class="input-group-text" id="inputGroup-sizing-default">Entity query</span>
+              <span class="input-group-text" id="inputGroup-sizing-default">Topology query</span>
             </div>
-            <input onchange="query()" type="text" id="diag-query" value="type(HOST)" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+            <input onkeypress="handleKeyPress(event)" onchange="query()" type="text" id="diag-query" value="type(HOST)" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
         </div> 
-       
     </div>
 
     <div height="200px" width="50%" class="" id="3d-graph"></div>
@@ -37,6 +37,13 @@
         YOUR_DT_API_URL = '';
         YOUR_DT_API_TOKEN = '';
         LIMIT = 500;
+
+        function handleKeyPress(e){
+            var key=e.keyCode || e.which;
+            if (key==13){
+                query();
+            }
+        }
 
         function loadEnv() {
             // load env and token
