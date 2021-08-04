@@ -11,8 +11,7 @@
         <script src="https://unpkg.com/3d-force-graph"></script>
     </head>
 <body style="background-color:black;">
-
-    <div style="margin-top: 25px;"></div>
+    <div style="margin-top: 10px;"></div>
     <div class="container" >
         <div class="input-group mb-3">
             <div class="input-group-prepend">
@@ -36,13 +35,13 @@
                 <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),entityName(MyHost))">
                 <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),tag(PROD))">
                 <option value="type(SERVICE),fromRelationship.calls(type(SERVICE),entityName(JourneyService))">
-                    
             </datalist>
         </div> 
+        <p style="color:gainsboro;"><small>Code available on <a target="_" href="https://github.com/wolfgangB33r/GraphIT">GitHub</a></small></p>
     </div>
 
     <div height="200px" width="50%" class="" id="3d-graph"></div>
-
+    
     <script>
         YOUR_DT_API_URL = '';
         YOUR_DT_API_TOKEN = '';
