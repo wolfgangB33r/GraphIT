@@ -26,10 +26,18 @@
             <input onchange="updateEnv()" type="password" id="diag-token" value="<YOUR-DT-TOKEN>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">    
         </div>
         <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <span class="input-group-text" id="inputGroup-sizing-default">Topology query</span>
-            </div>
-            <input onkeypress="handleKeyPress(event)" onchange="query()" type="text" id="diag-query" value="type(HOST)" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+            <input id="diag-query" onkeypress="handleKeyPress(event)" onchange="query()" class="form-control" list="exampleQueriesDataList" placeholder="Type a topology query...">
+            <datalist id="exampleQueriesDataList">
+                <option value="type(HOST)">
+                <option value="type(SERVICE)">
+                <option value="type(PROCESS_GROUP_INSTANCE)">
+                <option value="type(HOST),tag(PROD)">
+                <option value="type(SERVICE),entityName(LoginService)">
+                <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),entityName(MyHost))">
+                <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),tag(PROD))">
+                <option value="type(SERVICE),fromRelationship.calls(type(SERVICE),entityName(JourneyService))">
+                    
+            </datalist>
         </div> 
     </div>
 
