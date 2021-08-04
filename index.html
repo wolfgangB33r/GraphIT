@@ -10,238 +10,287 @@
     
         <script src="https://unpkg.com/3d-force-graph"></script>
     </head>
-<body style="background-color:black;">
-    <div style="margin-top: 10px;"></div>
-    <div class="container" >
-        <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <span class="input-group-text" id="inputGroup-sizing-default">Dynatrace Environment</span>
-            </div>
-            <input onchange="updateEnv()" type="text" id="diag-env" value="<YOUR-DT-URL>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
-            &nbsp;
-            <div class="input-group-prepend">
-                <span class="input-group-text" id="inputGroup-sizing-default">Api-Token (needs Entity v2 Read Scope)</span>
-            </div>
-            <input onchange="updateEnv()" type="password" id="diag-token" value="<YOUR-DT-TOKEN>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">    
-        </div>
-        <div class="input-group mb-3">
-            <input id="diag-query" onkeypress="handleKeyPress(event)" onchange="query()" class="form-control" list="exampleQueriesDataList" placeholder="Type a topology query...">
-            <datalist id="exampleQueriesDataList">
-                <option value="type(HOST)">
-                <option value="type(SERVICE)">
-                <option value="type(PROCESS_GROUP_INSTANCE)">
-                <option value="type(HOST),tag(PROD)">
-                <option value="type(SERVICE),entityName(LoginService)">
-                <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),entityName(MyHost))">
-                <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),tag(PROD))">
-                <option value="type(SERVICE),fromRelationship.calls(type(SERVICE),entityName(JourneyService))">
-            </datalist>
-        </div> 
-        <p style="color:gainsboro;"><small>Code available on <a target="_" href="https://github.com/wolfgangB33r/GraphIT">GitHub</a></small></p>
-    </div>
-
-    <div height="200px" width="50%" class="" id="3d-graph"></div>
-    
-    <script>
-        YOUR_DT_API_URL = '';
-        YOUR_DT_API_TOKEN = '';
-        LIMIT = 500;
-
-        function handleKeyPress(e){
-            var key=e.keyCode || e.which;
-            if (key==13){
-                query();
-            }
-        }
-
-        function loadEnv() {
-            // load env and token
-            document.getElementById("diag-env").value = localStorage.getItem('env')
-            document.getElementById("diag-token").value = localStorage.getItem('token')
-            YOUR_DT_API_URL = localStorage.getItem('env');
-            YOUR_DT_API_TOKEN = localStorage.getItem('token');
-        }
-
-        function updateEnv() {
-            YOUR_DT_API_TOKEN = document.getElementById("diag-token").value;
-            YOUR_DT_API_URL = document.getElementById("diag-env").value;
-            localStorage.setItem("token", YOUR_DT_API_TOKEN);
-            localStorage.setItem("env", YOUR_DT_API_URL);
-        }
+    <body style="background-color:black;">
         
-        loadEnv();
+        <div id='property-popup' style="display: none;z-index: 1; position: absolute; right: 100px; bottom: 20px; background-color: #f8f6f6; width: 300px; height: 400px; padding: 0px; color: rgb(5, 0, 0); ">
+            <div style="margin: 10px;">
+                <table class="table table-sm">
+                    <tbody>
+                      <tr>
+                        <th scope="row">1</th>
+                        <td>Mark</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">2</th>
+                        <td>Jacob</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">3</th>
+                        <td colspan="2">Larry the Bird</td>
+                      </tr>
+                    </tbody>
+                  </table>
+            </div>    
+        </div> 
+        
+        <div style="margin-top: 10px;"></div>
+        <div class="container" >
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">Dynatrace Environment</span>
+                </div>
+                <input onchange="updateEnv()" type="text" id="diag-env" value="<YOUR-DT-URL>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+                &nbsp;
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Api-Token (needs Entity v2 Read Scope)</span>
+                </div>
+                <input onchange="updateEnv()" type="password" id="diag-token" value="<YOUR-DT-TOKEN>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">    
+            </div>
+            <div class="input-group mb-3">
+                <input id="diag-query" onkeypress="handleKeyPress(event)" onchange="query()" class="form-control" list="exampleQueriesDataList" placeholder="Type a topology query...">
+                <datalist id="exampleQueriesDataList">
+                    <option value="type(HOST)">
+                    <option value="type(SERVICE)">
+                    <option value="type(PROCESS_GROUP_INSTANCE)">
+                    <option value="type(HOST),tag(PROD)">
+                    <option value="type(SERVICE),entityName(LoginService)">
+                    <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),entityName(MyHost))">
+                    <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),tag(PROD))">
+                    <option value="type(SERVICE),fromRelationship.calls(type(SERVICE),entityName(JourneyService))">
+                </datalist>
+            </div> 
+            <p style="color:gainsboro;"><small>Code available on <a target="_" href="https://github.com/wolfgangB33r/GraphIT">GitHub</a></small></p>
+        </div>
 
-        const N = 50;
-        gData = {
-        nodes: [...Array(N).keys()].map(i => ({ id: i })),
-        links: [...Array(N).keys()]
-            .filter(id => id)
-            .map(id => ({
-            source: id,
-            target: Math.round(Math.random() * (id-1))
-            }))
-        };
-        entityIndex = {}
-        tempRel = []
+        <div height="200px" width="50%" class="" id="3d-graph"></div>
+        
+        <script>
+            YOUR_DT_API_URL = '';
+            YOUR_DT_API_TOKEN = '';
+            LIMIT = 500;
+            showPropertyDialogData = undefined;
 
-        const Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('3d-graph')).graphData(gData).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
-
-        function nodeLeftClick(node, event) {
-            fetchSingleEntity(node.id, addEntityToGraphFollow)
-        }
-
-        function addEntityToGraphFollow(json) {
-            console.log({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
-            // if we don't have the entity in our entityIndex already, we have to add the node to our graph
-            if(!(json.entityId in entityIndex)) {
-                gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
-                Graph.graphData(gData).refresh();
-                // store entity details in our entity index
-                entityIndex[json['entityId']] = json;
+            function handleKeyPress(e){
+                var key=e.keyCode || e.which;
+                if (key==13){
+                    query();
+                }
             }
-            if('fromRelationships' in json) {
-                Object.keys(json.fromRelationships).forEach(relType => {
-                    json.fromRelationships[relType].forEach(rel => {
-                        if(!(rel.id in entityIndex)) {
-                            fetchSingleEntity(rel.id, addEntityToGraph)
-                        }
-                    });
-                }); 
+
+            function loadEnv() {
+                // load env and token
+                document.getElementById("diag-env").value = localStorage.getItem('env')
+                document.getElementById("diag-token").value = localStorage.getItem('token')
+                YOUR_DT_API_URL = localStorage.getItem('env');
+                YOUR_DT_API_TOKEN = localStorage.getItem('token');
             }
-            if('toRelationships' in json) {
-                Object.keys(json.toRelationships).forEach(relType => {
-                    json.toRelationships[relType].forEach(rel => {
-                        if(!(rel.id in entityIndex)) {
-                            fetchSingleEntity(rel.id, addEntityToGraph)
-                        }
-                    });
-                });    
+
+            function updateEnv() {
+                YOUR_DT_API_TOKEN = document.getElementById("diag-token").value;
+                YOUR_DT_API_URL = document.getElementById("diag-env").value;
+                localStorage.setItem("token", YOUR_DT_API_TOKEN);
+                localStorage.setItem("env", YOUR_DT_API_URL);
             }
             
-        }
+            loadEnv();
 
-        function addEntityToGraph(json) {
-            console.log({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
-            // if we don't have the entity in our entityIndex already, we have to add the node to our graph
-            if(!(json.entityId in entityIndex)) {
-                gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
-                // store entity details in our entity index
-                entityIndex[json['entityId']] = json;
-                Graph.graphData(gData).refresh();
-            }
-            if('fromRelationships' in json) {
-                Object.keys(json.fromRelationships).forEach(relType => {
-                    json.fromRelationships[relType].forEach(rel => {
-                        if(rel.id in entityIndex && json.entityId in entityIndex) {
-                            gData.links.push({'source' : json.entityId, 'target' : rel.id, 'type' : relType});
-                            Graph.graphData(gData).refresh();
-                        } 
-                    });
-                });  
-            }
-            if('toRelationships' in json) {
-                Object.keys(json.toRelationships).forEach(relType => {
-                    json.toRelationships[relType].forEach(rel => {
-                        if(rel.id in entityIndex && json.entityId in entityIndex) {
-                            gData.links.push({'source' : rel.id, 'target' : json.entityId, 'type' : relType});
-                            Graph.graphData(gData).refresh();
-                        } 
-                    });
-                });   
-            }
-            // store entity details in our entity index
-            entityIndex[json['entityId']] = json;
-        }
-
-        function nodeRightClick(node, event) {
-            console.log("right click");
-        }
-
-        function query() {
-            // clear graph first
-            gData = { nodes : [], links : [] }
+            const N = 50;
+            gData = {
+            nodes: [...Array(N).keys()].map(i => ({ id: i })),
+            links: [...Array(N).keys()]
+                .filter(id => id)
+                .map(id => ({
+                source: id,
+                target: Math.round(Math.random() * (id-1))
+                }))
+            };
             entityIndex = {}
             tempRel = []
-            // now fetch
-            q = document.getElementById("diag-query").value;
-            fetchGraph(q, pageResult)
-        }
 
-        function pageResult(graphJson, q, callback) {
-            // add partial result to graph 
-            console.log(graphJson);
-            graphJson['entities'].forEach(element => {
-                if(!entityIndex[element.entityId]) {
-                    gData.nodes.push({'id' : element.entityId, 'displayName' : element.displayName, 'group' : element.entityId.substring(0,element.entityId.search('-'))});
-                    entityIndex[element.entityId] = true;
+            const Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('3d-graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
+
+            // Mouse click graph interactions
+            
+            // Left click should show the properties and relationships as an overlay
+            function nodeLeftClick(node, event) {
+                console.log("Left click: show properties");
+                fetchSingleEntity(node.id, addEntityToGraph);
+                showPropertyDialogData = {'node' : node.id, 'event' : event};
+            }
+
+            function nodeRightClick(node, event) {
+                console.log("Right click: expand all related entities");
+                fetchSingleEntity(node.id, addEntityToGraphFollow);
+            }
+
+            function nodeBackgroundClick(event) {
+                document.getElementById('property-popup').style.display = 'none';
+                showPropertyDialogData = undefined;
+            }
+
+            // Show entity properties pop up
+            function showEntityPropertiesPopup(id, event) {
+                console.log(event);   
+                console.log(entityIndex[id]); 
+                //document.getElementById('property-popup').style.top = event.pageY;
+                //document.getElementById('property-popup').style.left = event.pageX;
+                //document.getElementById('property-popup').style.display = 'block';
+               
+            }
+
+            
+
+            function addEntityToGraphFollow(json) {
+                console.log({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+                // if we don't have the entity in our entityIndex already, we have to add the node to our graph
+                if(!(json.entityId in entityIndex)) {
+                    gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+                    Graph.graphData(gData).refresh();
+                    // store entity details in our entity index
+                    entityIndex[json['entityId']] = json;
                 }
-                if('fromRelationships' in element) {
-                    Object.keys(element.fromRelationships).forEach(relType => {
-                        element.fromRelationships[relType].forEach(rel => {
-                            tempRel.push({'source' : element.entityId, 'target' : rel.id, 'type' : relType});
+                if('fromRelationships' in json) {
+                    Object.keys(json.fromRelationships).forEach(relType => {
+                        json.fromRelationships[relType].forEach(rel => {
+                            if(!(rel.id in entityIndex)) {
+                                fetchSingleEntity(rel.id, addEntityToGraph)
+                            }
                         });
-                    });
-                    
+                    }); 
+                }
+                if('toRelationships' in json) {
+                    Object.keys(json.toRelationships).forEach(relType => {
+                        json.toRelationships[relType].forEach(rel => {
+                            if(!(rel.id in entityIndex)) {
+                                fetchSingleEntity(rel.id, addEntityToGraph)
+                            }
+                        });
+                    });    
                 }
                 
-            });
+            }
 
-            // we do have to fetch the next page
-            if('nextPageKey' in graphJson && gData.nodes.length < LIMIT) {
-                console.log("Oh I have to fetch again" + gData.nodes.length  + " " + LIMIT);
-                fetchGraph(q, callback, graphJson['nextPageKey'])
-            } else {
-                // only add those relationships to the graph where we also have the nodes in the result set
-                tempRel.forEach(rel => {
-                    if(rel.source in entityIndex && rel.target in entityIndex) {
-                        gData.links.push(rel);
+            function addEntityToGraph(json) {
+                console.log(json);
+                console.log({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+                // if we don't have the entity in our entityIndex already, we have to add the node to our graph
+                if(!(json.entityId in entityIndex)) {
+                    gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
+                    // store entity details in our entity index
+                    entityIndex[json['entityId']] = json;
+                    Graph.graphData(gData).refresh();
+                }
+                if('fromRelationships' in json) {
+                    Object.keys(json.fromRelationships).forEach(relType => {
+                        json.fromRelationships[relType].forEach(rel => {
+                            if(rel.id in entityIndex && json.entityId in entityIndex) {
+                                gData.links.push({'source' : json.entityId, 'target' : rel.id, 'type' : relType});
+                                Graph.graphData(gData).refresh();
+                            } 
+                        });
+                    });  
+                }
+                if('toRelationships' in json) {
+                    Object.keys(json.toRelationships).forEach(relType => {
+                        json.toRelationships[relType].forEach(rel => {
+                            if(rel.id in entityIndex && json.entityId in entityIndex) {
+                                gData.links.push({'source' : rel.id, 'target' : json.entityId, 'type' : relType});
+                                Graph.graphData(gData).refresh();
+                            } 
+                        });
+                    });   
+                }
+                // store entity details in our entity index
+                entityIndex[json['entityId']] = json;
+                // show entity property dialog if requested
+                if(showPropertyDialogData !== undefined) {
+                    showEntityPropertiesPopup(showPropertyDialogData.node, showPropertyDialogData.event);
+                }
+            }
+
+            function query() {
+                // clear graph first
+                gData = { nodes : [], links : [] }
+                entityIndex = {}
+                tempRel = []
+                // now fetch
+                q = document.getElementById("diag-query").value;
+                fetchGraph(q, pageResult)
+            }
+
+            function pageResult(graphJson, q, callback) {
+                // add partial result to graph 
+                console.log(graphJson);
+                graphJson['entities'].forEach(element => {
+                    if(!entityIndex[element.entityId]) {
+                        gData.nodes.push({'id' : element.entityId, 'displayName' : element.displayName, 'group' : element.entityId.substring(0,element.entityId.search('-'))});
+                        entityIndex[element.entityId] = true;
                     }
+                    if('fromRelationships' in element) {
+                        Object.keys(element.fromRelationships).forEach(relType => {
+                            element.fromRelationships[relType].forEach(rel => {
+                                tempRel.push({'source' : element.entityId, 'target' : rel.id, 'type' : relType});
+                            });
+                        });
+                        
+                    }
+                    
                 });
-                console.log(gData);
-                Graph.graphData(gData).refresh();
-                console.log("Yeah finished!");
 
-            }
-        }
+                // we do have to fetch the next page
+                if('nextPageKey' in graphJson && gData.nodes.length < LIMIT) {
+                    console.log("Oh I have to fetch again" + gData.nodes.length  + " " + LIMIT);
+                    fetchGraph(q, callback, graphJson['nextPageKey'])
+                } else {
+                    // only add those relationships to the graph where we also have the nodes in the result set
+                    tempRel.forEach(rel => {
+                        if(rel.source in entityIndex && rel.target in entityIndex) {
+                            gData.links.push(rel);
+                        }
+                    });
+                    console.log(gData);
+                    Graph.graphData(gData).refresh();
+                    console.log("Yeah finished!");
 
-        function fetchGraph(q, callback, nextPageKey) {
-            if(nextPageKey) {
-                url = YOUR_DT_API_URL + "/api/v2/entities?nextPageKey={npk}"
-                url = url.replace("{npk}", nextPageKey);
-            } else {
-                url = YOUR_DT_API_URL + "/api/v2/entities?fields=+fromRelationships&entitySelector={q}"
-                url = url.replace("{q}", q);
-            }
-            console.log(url);
-            var oReq = new XMLHttpRequest();
-            oReq.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    evjson = JSON.parse(oReq.responseText);
-                    callback(evjson, q, callback);
                 }
-            };
-            oReq.open("GET", encodeURI(url));
-            oReq.setRequestHeader("Authorization", "Api-Token " + YOUR_DT_API_TOKEN);
-            oReq.send();    
-        }
+            }
 
-        function fetchSingleEntity(entityId, callback) {
-            url = YOUR_DT_API_URL + "/api/v2/entities/{q}"
-            url = url.replace("{q}", entityId);
-            console.log(url);
-            var oReq = new XMLHttpRequest();
-            oReq.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    evjson = JSON.parse(oReq.responseText);
-                    callback(evjson);
+            function fetchGraph(q, callback, nextPageKey) {
+                if(nextPageKey) {
+                    url = YOUR_DT_API_URL + "/api/v2/entities?nextPageKey={npk}"
+                    url = url.replace("{npk}", nextPageKey);
+                } else {
+                    url = YOUR_DT_API_URL + "/api/v2/entities?fields=+fromRelationships&entitySelector={q}"
+                    url = url.replace("{q}", q);
                 }
-            };
-            oReq.open("GET", encodeURI(url));
-            oReq.setRequestHeader("Authorization", "Api-Token " + YOUR_DT_API_TOKEN);
-            oReq.send();    
-        }
+                console.log(url);
+                var oReq = new XMLHttpRequest();
+                oReq.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        evjson = JSON.parse(oReq.responseText);
+                        callback(evjson, q, callback);
+                    }
+                };
+                oReq.open("GET", encodeURI(url));
+                oReq.setRequestHeader("Authorization", "Api-Token " + YOUR_DT_API_TOKEN);
+                oReq.send();    
+            }
 
-    </script>
-
-</body>
+            function fetchSingleEntity(entityId, callback) {
+                url = YOUR_DT_API_URL + "/api/v2/entities/{q}"
+                url = url.replace("{q}", entityId);
+                console.log(url);
+                var oReq = new XMLHttpRequest();
+                oReq.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        evjson = JSON.parse(oReq.responseText);
+                        callback(evjson);
+                    }
+                };
+                oReq.open("GET", encodeURI(url));
+                oReq.setRequestHeader("Authorization", "Api-Token " + YOUR_DT_API_TOKEN);
+                oReq.send();    
+            }
+        </script>
+    </body>
 </html>
