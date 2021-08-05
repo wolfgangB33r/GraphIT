@@ -11,7 +11,8 @@
         <script src="https://unpkg.com/3d-force-graph"></script>
     </head>
     <body style="background-color:black;">
-        <div id='property-popup' class="card" style="display: none;z-index: 1; position: absolute; right: 100px; bottom: 20px; background: rgba(0, 38, 255, 0.5); width: 400px; height: 400px; padding: 0px; color: rgb(255, 255, 255); ">
+        
+        <div id='property-popup' class="card" style="display: none;z-index: 1; position: absolute; right: 100px; bottom: 20px; background: rgba(0, 38, 255, 0); width: 400px; height: 400px; padding: 0px; color: rgb(255, 255, 255); ">
             <div class="card-body" style="overflow-y: auto;" id='property-popup-content'>
                 
             </div>   
@@ -113,36 +114,44 @@
                 showPropertyDialogData = undefined;
             }
 
+            function followEntityRelationship(direction, entityId, relationship) {
+                entityJson = entityIndex[entityId];
+                entityJson[direction][relationship].forEach(rel => {
+                    if(!(rel.id in entityIndex)) {
+                        fetchSingleEntity(rel.id, addEntityToGraph)
+                    }
+                });
+            }
+
             // Show entity properties pop up
             function showEntityPropertiesPopup(id, event) {
-                console.log(event);   
-                console.log(entityIndex[id]);
                 text = "<strong>" + entityIndex[id].displayName +  "</strong><br>";
                 text += "<strong>Type</strong>: " + id.substring(0,id.search('-')) +  "<br>";
+                count = 0;
                 for ([key, value] of Object.entries(entityIndex[id].properties)) {
                     if(!Array.isArray(value)) {
                         if(value.length > 30) {
                             value = value.substring(0, 30) + '...';
                         }
                         text += "<strong>" + key + '</strong>: ' + value + "<br>"; 
-                    } else {
-
+                    } 
+                    if(count > 5) {
+                        text += "<strong>+" + (Object.keys(entityIndex[id].properties).length - 5) + ' more</strong><br>';
+                        break; 
                     }
+                    count++;
                 }
                 for ([key, value] of Object.entries(entityIndex[id].fromRelationships)) {
-                    text += "-><strong>" + key +  "</strong> (" + value.length + ")<br>";
+                    text += "-><a href='#' onclick='followEntityRelationship(\"fromRelationships\",\"" + id + "\",\"" + key + "\")'>" + key +  "</a> (" + value.length + ")<br>";
                 }
                 for ([key, value] of Object.entries(entityIndex[id].toRelationships)) {
-                    text += "<-<strong>" + key +  "</strong> (" + value.length + ")<br>";
+                    text += "<-<a href='#' onclick='followEntityRelationship(\"toRelationships\",\"" + id + "\",\"" + key + "\")'>" + key +  "</a> (" + value.length + ")<br>";
                 }
                 document.getElementById("property-popup-content").innerHTML = text 
                 document.getElementById('property-popup').style.top = event.pageY;
                 document.getElementById('property-popup').style.left = event.pageX;
                 document.getElementById('property-popup').style.display = 'block';
-               
             }
-
-            
 
             function addEntityToGraphFollow(json) {
                 console.log({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
@@ -171,12 +180,9 @@
                         });
                     });    
                 }
-                
             }
 
             function addEntityToGraph(json) {
-                console.log(json);
-                console.log({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
                 // if we don't have the entity in our entityIndex already, we have to add the node to our graph
                 if(!(json.entityId in entityIndex)) {
                     gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
@@ -224,7 +230,6 @@
 
             function pageResult(graphJson, q, callback) {
                 // add partial result to graph 
-                console.log(graphJson);
                 graphJson['entities'].forEach(element => {
                     if(!entityIndex[element.entityId]) {
                         gData.nodes.push({'id' : element.entityId, 'displayName' : element.displayName, 'group' : element.entityId.substring(0,element.entityId.search('-'))});
@@ -243,7 +248,6 @@
 
                 // we do have to fetch the next page
                 if('nextPageKey' in graphJson && gData.nodes.length < LIMIT) {
-                    console.log("Oh I have to fetch again" + gData.nodes.length  + " " + LIMIT);
                     fetchGraph(q, callback, graphJson['nextPageKey'])
                 } else {
                     // only add those relationships to the graph where we also have the nodes in the result set
@@ -252,10 +256,7 @@
                             gData.links.push(rel);
                         }
                     });
-                    console.log(gData);
                     Graph.graphData(gData).refresh();
-                    console.log("Yeah finished!");
-
                 }
             }
 
@@ -267,7 +268,6 @@
                     url = YOUR_DT_API_URL + "/api/v2/entities?fields=+fromRelationships&entitySelector={q}"
                     url = url.replace("{q}", q);
                 }
-                console.log(url);
                 var oReq = new XMLHttpRequest();
                 oReq.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
