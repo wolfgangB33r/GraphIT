@@ -141,24 +141,30 @@
                 text = "<strong>" + entityIndex[id].displayName +  "</strong><br>";
                 text += "<strong>Type</strong>: " + id.substring(0,id.search('-')) +  "<br>";
                 count = 0;
-                for ([key, value] of Object.entries(entityIndex[id].properties)) {
-                    if(!Array.isArray(value)) {
-                        if(value.length > 30) {
-                            value = value.substring(0, 30) + '...';
+                if(entityIndex[id].properties) {
+                    for ([key, value] of Object.entries(entityIndex[id].properties)) {
+                        if(!Array.isArray(value)) {
+                            if(value.length > 30) {
+                                value = value.substring(0, 30) + '...';
+                            }
+                            text += "<strong>" + key + '</strong>: ' + value + "<br>"; 
+                        } 
+                        if(count > 5) {
+                            text += "<strong>+" + (Object.keys(entityIndex[id].properties).length - 5) + ' more</strong><br>';
+                            break; 
                         }
-                        text += "<strong>" + key + '</strong>: ' + value + "<br>"; 
-                    } 
-                    if(count > 5) {
-                        text += "<strong>+" + (Object.keys(entityIndex[id].properties).length - 5) + ' more</strong><br>';
-                        break; 
+                        count++;
                     }
-                    count++;
                 }
-                for ([key, value] of Object.entries(entityIndex[id].fromRelationships)) {
-                    text += "-><a href='#' onclick='followEntityRelationship(\"fromRelationships\",\"" + id + "\",\"" + key + "\")'>" + key +  "</a> (" + value.length + ")<br>";
+                if(entityIndex[id].fromRelationships) {
+                    for ([key, value] of Object.entries(entityIndex[id].fromRelationships)) {
+                        text += "-><a href='#' onclick='followEntityRelationship(\"fromRelationships\",\"" + id + "\",\"" + key + "\")'>" + key +  "</a> (" + value.length + ")<br>";
+                    }
                 }
-                for ([key, value] of Object.entries(entityIndex[id].toRelationships)) {
-                    text += "<-<a href='#' onclick='followEntityRelationship(\"toRelationships\",\"" + id + "\",\"" + key + "\")'>" + key +  "</a> (" + value.length + ")<br>";
+                if(entityIndex[id].toRelationships) {
+                    for ([key, value] of Object.entries(entityIndex[id].toRelationships)) {
+                        text += "<-<a href='#' onclick='followEntityRelationship(\"toRelationships\",\"" + id + "\",\"" + key + "\")'>" + key +  "</a> (" + value.length + ")<br>";
+                    }
                 }
                 document.getElementById("property-popup-content").innerHTML = text 
                 document.getElementById('property-popup').style.top = event.pageY;
