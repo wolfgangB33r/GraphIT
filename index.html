@@ -11,55 +11,40 @@
         <script src="https://unpkg.com/3d-force-graph"></script>
     </head>
     <body style="background-color:black;">
-        
-        <div id='property-popup' style="display: none;z-index: 1; position: absolute; right: 100px; bottom: 20px; background-color: #f8f6f6; width: 300px; height: 400px; padding: 0px; color: rgb(5, 0, 0); ">
-            <div style="margin: 10px;">
-                <table class="table table-sm">
-                    <tbody>
-                      <tr>
-                        <th scope="row">1</th>
-                        <td>Mark</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">2</th>
-                        <td>Jacob</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">3</th>
-                        <td colspan="2">Larry the Bird</td>
-                      </tr>
-                    </tbody>
-                  </table>
-            </div>    
+        <div id='property-popup' class="card" style="display: none;z-index: 1; position: absolute; right: 100px; bottom: 20px; background: rgba(0, 38, 255, 0.5); width: 400px; height: 400px; padding: 0px; color: rgb(255, 255, 255); ">
+            <div class="card-body" style="overflow-y: auto;" id='property-popup-content'>
+                
+            </div>   
         </div> 
         
-        <div style="margin-top: 10px;"></div>
-        <div class="container" >
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                <span class="input-group-text" id="inputGroup-sizing-default">Dynatrace Environment</span>
+        <div class="container" style="z-index: 1; position: absolute; top: 20px; left: 10%; width: 1000px; height: 100px;">
+            
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                    <span class="input-group-text" id="inputGroup-sizing-default">Dynatrace Environment</span>
+                    </div>
+                    <input onchange="updateEnv()" type="text" id="diag-env" value="<YOUR-DT-URL>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+                    &nbsp;
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-default">Api-Token (needs Entity v2 Read Scope)</span>
+                    </div>
+                    <input onchange="updateEnv()" type="password" id="diag-token" value="<YOUR-DT-TOKEN>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">    
                 </div>
-                <input onchange="updateEnv()" type="text" id="diag-env" value="<YOUR-DT-URL>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
-                &nbsp;
-                <div class="input-group-prepend">
-                    <span class="input-group-text" id="inputGroup-sizing-default">Api-Token (needs Entity v2 Read Scope)</span>
-                </div>
-                <input onchange="updateEnv()" type="password" id="diag-token" value="<YOUR-DT-TOKEN>" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">    
-            </div>
-            <div class="input-group mb-3">
-                <input id="diag-query" onkeypress="handleKeyPress(event)" onchange="query()" class="form-control" list="exampleQueriesDataList" placeholder="Type a topology query...">
-                <datalist id="exampleQueriesDataList">
-                    <option value="type(HOST)">
-                    <option value="type(SERVICE)">
-                    <option value="type(PROCESS_GROUP_INSTANCE)">
-                    <option value="type(HOST),tag(PROD)">
-                    <option value="type(SERVICE),entityName(LoginService)">
-                    <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),entityName(MyHost))">
-                    <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),tag(PROD))">
-                    <option value="type(SERVICE),fromRelationship.calls(type(SERVICE),entityName(JourneyService))">
-                </datalist>
-            </div> 
-            <p style="color:gainsboro;"><small>Code available on <a target="_" href="https://github.com/wolfgangB33r/GraphIT">GitHub</a></small></p>
+                <div class="input-group mb-3">
+                    <input id="diag-query" onkeypress="handleKeyPress(event)" onchange="query()" class="form-control" list="exampleQueriesDataList" placeholder="Type a topology query...">
+                    <datalist id="exampleQueriesDataList">
+                        <option value="type(HOST)">
+                        <option value="type(SERVICE)">
+                        <option value="type(PROCESS_GROUP_INSTANCE)">
+                        <option value="type(HOST),tag(PROD)">
+                        <option value="type(SERVICE),entityName(LoginService)">
+                        <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),entityName(MyHost))">
+                        <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),tag(PROD))">
+                        <option value="type(SERVICE),fromRelationship.calls(type(SERVICE),entityName(JourneyService))">
+                    </datalist>
+                </div> 
+                <p style="color:rgb(139, 138, 138);"><small>&nbsp;&nbsp;Code available on <a target="_" href="https://github.com/wolfgangB33r/GraphIT">GitHub</a></small></p>
+            
         </div>
 
         <div height="200px" width="50%" class="" id="3d-graph"></div>
@@ -131,10 +116,29 @@
             // Show entity properties pop up
             function showEntityPropertiesPopup(id, event) {
                 console.log(event);   
-                console.log(entityIndex[id]); 
-                //document.getElementById('property-popup').style.top = event.pageY;
-                //document.getElementById('property-popup').style.left = event.pageX;
-                //document.getElementById('property-popup').style.display = 'block';
+                console.log(entityIndex[id]);
+                text = "<strong>" + entityIndex[id].displayName +  "</strong><br>";
+                text += "<strong>Type</strong>: " + id.substring(0,id.search('-')) +  "<br>";
+                for ([key, value] of Object.entries(entityIndex[id].properties)) {
+                    if(!Array.isArray(value)) {
+                        if(value.length > 30) {
+                            value = value.substring(0, 30) + '...';
+                        }
+                        text += "<strong>" + key + '</strong>: ' + value + "<br>"; 
+                    } else {
+
+                    }
+                }
+                for ([key, value] of Object.entries(entityIndex[id].fromRelationships)) {
+                    text += "-><strong>" + key +  "</strong> (" + value.length + ")<br>";
+                }
+                for ([key, value] of Object.entries(entityIndex[id].toRelationships)) {
+                    text += "<-<strong>" + key +  "</strong> (" + value.length + ")<br>";
+                }
+                document.getElementById("property-popup-content").innerHTML = text 
+                document.getElementById('property-popup').style.top = event.pageY;
+                document.getElementById('property-popup').style.left = event.pageX;
+                document.getElementById('property-popup').style.display = 'block';
                
             }
 
