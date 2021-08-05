@@ -33,6 +33,9 @@
                 </div>
                 <div class="input-group mb-3">
                     <input id="diag-query" onkeypress="handleKeyPress(event)" onchange="query()" class="form-control" list="exampleQueriesDataList" placeholder="Type a topology query...">
+                    <div id="query-error" class="invalid-feedback">
+                        
+                    </div>
                     <datalist id="exampleQueriesDataList">
                         <option value="type(HOST)">
                         <option value="type(SERVICE)">
@@ -121,6 +124,16 @@
                         fetchSingleEntity(rel.id, addEntityToGraph)
                     }
                 });
+            }
+
+            function showQueryError(msg) {
+                document.getElementById('query-error').innerHTML = msg;
+                document.getElementById('query-error').style.display = 'block';
+            }
+
+            function clearQueryError() {
+                document.getElementById('query-error').innerHTML = '' ;
+                document.getElementById('query-error').style.display = 'none';
             }
 
             // Show entity properties pop up
@@ -219,6 +232,8 @@
             }
 
             function query() {
+                // clear any previous query error messages first
+                clearQueryError();
                 // clear graph first
                 gData = { nodes : [], links : [] }
                 entityIndex = {}
@@ -270,9 +285,17 @@
                 }
                 var oReq = new XMLHttpRequest();
                 oReq.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-                        evjson = JSON.parse(oReq.responseText);
-                        callback(evjson, q, callback);
+                    if(this.readyState == 4) {
+                        if (this.status == 200) {
+                            evjson = JSON.parse(oReq.responseText);
+                            callback(evjson, q, callback);
+                        } else if (this.status == 400) {
+                            errorjson = JSON.parse(oReq.responseText);
+                            console.log(errorjson);
+                            if(errorjson.error.constraintViolations !== undefined) {
+                                showQueryError(errorjson.error.constraintViolations[0].message);
+                            }
+                        }
                     }
                 };
                 oReq.open("GET", encodeURI(url));
