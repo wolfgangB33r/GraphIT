@@ -301,6 +301,8 @@
                             if(errorjson.error.constraintViolations !== undefined) {
                                 showQueryError(errorjson.error.constraintViolations[0].message);
                             }
+                        } else if (this.status == 404) {
+                            showQueryError("The access to your Dynatrace environment was denied! Check your Dynatrace environment URL and API token above.");
                         }
                     }
                 };
