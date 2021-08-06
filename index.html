@@ -9,8 +9,9 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
     
         <script src="https://unpkg.com/3d-force-graph"></script>
+        <script src="https://unpkg.com/force-graph"></script>
     </head>
-    <body style="background-color:black;">
+    <body style="background-color:rgb(0, 0, 0);">
         
         <div id='property-popup' class="card" style="display: none;z-index: 1; position: absolute; right: 100px; bottom: 20px; background: rgba(0, 38, 255, 0); width: 400px; height: 400px; padding: 0px; color: rgb(255, 255, 255); ">
             <div class="card-body" style="overflow-y: auto;" id='property-popup-content'>
@@ -46,12 +47,23 @@
                         <option value="type(PROCESS_GROUP_INSTANCE),fromRelationship.isProcessOf(type(HOST),tag(PROD))">
                         <option value="type(SERVICE),fromRelationship.calls(type(SERVICE),entityName(JourneyService))">
                     </datalist>
+
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-secondary active">
+                        <input type="radio" onclick="switch3D()" name="options" id="option1" autocomplete="off" checked> 3D
+                        </label>
+                        <label class="btn btn-secondary">
+                        <input type="radio" onclick="switch2D()" name="options" id="option2" autocomplete="off"> 2D
+                        </label>
+                    </div>
                 </div> 
-                <p style="color:rgb(139, 138, 138);"><small>&nbsp;&nbsp;Code available on <a target="_" href="https://github.com/wolfgangB33r/GraphIT">GitHub</a></small></p>
-            
+                <div class="input-group mb-3">
+                    
+                    <p style="color:rgb(139, 138, 138);"><small>&nbsp;&nbsp;Code available on <a target="_" href="https://github.com/wolfgangB33r/GraphIT">GitHub</a></small></p>
+                </div>
         </div>
 
-        <div height="200px" width="50%" class="" id="3d-graph"></div>
+        <div height="200px" width="50%" class="" id="graph"></div>
         
         <script>
             YOUR_DT_API_URL = '';
@@ -95,8 +107,21 @@
             };
             entityIndex = {}
             tempRel = []
+            is3D = true;
 
-            const Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('3d-graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
+            Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
+
+            function switch2D() {
+                is3D = false;
+                console.log("Switch to 2D");
+                Graph = ForceGraph()(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').backgroundColor('#000000').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1).linkColor(() => "#ffffff").linkWidth(() => 0.5);
+            }
+
+            function switch3D() {
+                is3D = true;
+                console.log("Switch to 3D");
+                Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
+            }
 
             // Mouse click graph interactions
             
@@ -177,7 +202,7 @@
                 // if we don't have the entity in our entityIndex already, we have to add the node to our graph
                 if(!(json.entityId in entityIndex)) {
                     gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
-                    Graph.graphData(gData).refresh();
+                    Graph.graphData(gData);
                     // store entity details in our entity index
                     entityIndex[json['entityId']] = json;
                 }
@@ -207,14 +232,14 @@
                     gData.nodes.push({'id' : json.entityId, 'displayName' : json.displayName, 'group' : json.entityId.substring(0,json.entityId.search('-'))});
                     // store entity details in our entity index
                     entityIndex[json['entityId']] = json;
-                    Graph.graphData(gData).refresh();
+                    Graph.graphData(gData);
                 }
                 if('fromRelationships' in json) {
                     Object.keys(json.fromRelationships).forEach(relType => {
                         json.fromRelationships[relType].forEach(rel => {
                             if(rel.id in entityIndex && json.entityId in entityIndex) {
                                 gData.links.push({'source' : json.entityId, 'target' : rel.id, 'type' : relType});
-                                Graph.graphData(gData).refresh();
+                                Graph.graphData(gData);
                             } 
                         });
                     });  
@@ -224,7 +249,7 @@
                         json.toRelationships[relType].forEach(rel => {
                             if(rel.id in entityIndex && json.entityId in entityIndex) {
                                 gData.links.push({'source' : rel.id, 'target' : json.entityId, 'type' : relType});
-                                Graph.graphData(gData).refresh();
+                                Graph.graphData(gData);
                             } 
                         });
                     });   
@@ -277,7 +302,7 @@
                             gData.links.push(rel);
                         }
                     });
-                    Graph.graphData(gData).refresh();
+                    Graph.graphData(gData);
                 }
             }
 
