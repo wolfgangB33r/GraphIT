@@ -34,6 +34,14 @@
                 </div>
                 <div class="input-group mb-3">
                     <input id="diag-query" onkeypress="handleKeyPress(event)" onchange="query()" class="form-control" list="exampleQueriesDataList" placeholder="Type a topology query...">
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-secondary active">
+                        <input type="radio" onclick="switch3D()" name="options" id="option1" autocomplete="off" checked> 3D
+                        </label>
+                        <label class="btn btn-secondary">
+                        <input type="radio" onclick="switch2D()" name="options" id="option2" autocomplete="off"> 2D
+                        </label>
+                    </div>
                     <div id="query-error" class="invalid-feedback">
                         
                     </div>
@@ -48,14 +56,7 @@
                         <option value="type(SERVICE),fromRelationship.calls(type(SERVICE),entityName(JourneyService))">
                     </datalist>
 
-                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                        <label class="btn btn-secondary active">
-                        <input type="radio" onclick="switch3D()" name="options" id="option1" autocomplete="off" checked> 3D
-                        </label>
-                        <label class="btn btn-secondary">
-                        <input type="radio" onclick="switch2D()" name="options" id="option2" autocomplete="off"> 2D
-                        </label>
-                    </div>
+                    
                 </div> 
                 <div class="input-group mb-3">
                     
