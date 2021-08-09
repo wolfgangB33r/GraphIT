@@ -96,6 +96,9 @@
             function updateEnv() {
                 YOUR_DT_API_TOKEN = document.getElementById("diag-token").value;
                 YOUR_DT_API_URL = document.getElementById("diag-env").value;
+                if(YOUR_DT_API_URL.endsWith('/')) {
+                    YOUR_DT_API_URL = YOUR_DT_API_URL.substring(0, YOUR_DT_API_URL.length - 1);
+                }
                 localStorage.setItem("token", YOUR_DT_API_TOKEN);
                 localStorage.setItem("env", YOUR_DT_API_URL);
             }
