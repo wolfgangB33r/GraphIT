@@ -13,6 +13,10 @@
     </head>
     <body style="background-color:rgb(0, 0, 0);">
         
+        <div id="progress-spinner" class="spinner-grow text-secondary" style="display: none;z-index: 1; position: absolute; right: 50%; bottom: 50%; width: 5rem; height: 5rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+
         <div id='property-popup' class="card" style="display: none;z-index: 1; position: absolute; right: 100px; bottom: 20px; background: rgba(0, 38, 255, 0); width: 400px; height: 400px; padding: 0px; color: rgb(255, 255, 255); ">
             <div class="card-body" style="overflow-y: auto;" id='property-popup-content'>
                 
@@ -64,7 +68,9 @@
                 </div>
         </div>
 
-        <div height="200px" width="50%" class="" id="graph"></div>
+        <div height="200px" width="50%" class="" id="graph">
+            
+        </div>
         
         <script>
             YOUR_DT_API_URL = '';
@@ -160,6 +166,14 @@
             function clearQueryError() {
                 document.getElementById('query-error').innerHTML = '' ;
                 document.getElementById('query-error').style.display = 'none';
+            }
+
+            function showProgressSpinner() {
+                document.getElementById('progress-spinner').style.display = 'block';
+            }
+
+            function hideProgressSpinner() {
+                document.getElementById('progress-spinner').style.display = 'none';
             }
 
             // Show entity properties pop up
@@ -264,6 +278,8 @@
             }
 
             function query() {
+                // show progress spinner
+                showProgressSpinner();
                 // clear any previous query error messages first
                 clearQueryError();
                 // clear graph first
@@ -304,6 +320,8 @@
                         }
                     });
                     Graph.graphData(gData);
+                    // hide progress spinner
+                    hideProgressSpinner();
                 }
             }
 
@@ -327,8 +345,10 @@
                             if(errorjson.error.constraintViolations !== undefined) {
                                 showQueryError(errorjson.error.constraintViolations[0].message);
                             }
+                            hideProgressSpinner();
                         } else if (this.status == 404) {
                             showQueryError("The access to your Dynatrace environment was denied! Check your Dynatrace environment URL and API token above.");
+                            hideProgressSpinner();
                         }
                     }
                 };
