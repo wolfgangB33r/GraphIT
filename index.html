@@ -79,6 +79,7 @@
             YOUR_DT_API_TOKEN = '';
             LIMIT = 250;
             showPropertyDialogData = undefined;
+            var action;
 
             function handleKeyPress(e){
                 var key=e.keyCode || e.which;
@@ -179,6 +180,7 @@
 
             function hideProgressSpinner() {
                 document.getElementById('progress-spinner').style.display = 'none';
+                dtrum.leaveAction(action);
             }
 
             // Show entity properties pop up
@@ -293,6 +295,9 @@
                 tempRel = []
                 // now fetch
                 q = document.getElementById("diag-query").value;
+                // report action to Dynatrace
+                action = dtrum.enterAction('Query', q);
+                //
                 fetchGraph(q, pageResult)
             }
 
