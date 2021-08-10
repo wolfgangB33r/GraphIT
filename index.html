@@ -296,7 +296,7 @@
                 // now fetch
                 q = document.getElementById("diag-query").value;
                 // report action to Dynatrace
-                action = dtrum.enterAction('Query', q);
+                action = dtrum.enterAction('query - ' + q);
                 //
                 fetchGraph(q, pageResult)
             }
