@@ -125,15 +125,19 @@
             Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
 
             function switch2D() {
+                action = dtrum.enterAction('switch 2D');
                 is3D = false;
                 console.log("Switch to 2D");
                 Graph = ForceGraph()(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').backgroundColor('#000000').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1).linkColor(() => "#ffffff").linkWidth(() => 0.5);
+                dtrum.leaveAction(action);
             }
 
             function switch3D() {
+                action = dtrum.enterAction('switch 3D');
                 is3D = true;
                 console.log("Switch to 3D");
                 Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
+                dtrum.leaveAction(action);
             }
 
             // Mouse click graph interactions
@@ -141,6 +145,7 @@
             // Left click should show the properties and relationships as an overlay
             function nodeLeftClick(node, event) {
                 console.log("Left click: show properties");
+                action = dtrum.enterAction('show properties');
                 fetchSingleEntity(node.id, addEntityToGraph);
                 showPropertyDialogData = {'node' : node.id, 'event' : event};
             }
@@ -156,12 +161,14 @@
             }
 
             function followEntityRelationship(direction, entityId, relationship) {
+                action = dtrum.enterAction('load relationship ' + relationship);
                 entityJson = entityIndex[entityId];
                 entityJson[direction][relationship].forEach(rel => {
                     if(!(rel.id in entityIndex)) {
                         fetchSingleEntity(rel.id, addEntityToGraph)
                     }
                 });
+                dtrum.leaveAction(action);
             }
 
             function showQueryError(msg) {
@@ -296,7 +303,7 @@
                 // now fetch
                 q = document.getElementById("diag-query").value;
                 // report action to Dynatrace
-                action = dtrum.enterAction('query - ' + q);
+                action = dtrum.enterAction('' + q);
                 //
                 fetchGraph(q, pageResult)
             }
@@ -376,6 +383,7 @@
                     if (this.readyState == 4 && this.status == 200) {
                         evjson = JSON.parse(oReq.responseText);
                         callback(evjson);
+                        dtrum.leaveAction(action);
                     }
                 };
                 oReq.open("GET", encodeURI(url));
