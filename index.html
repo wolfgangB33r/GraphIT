@@ -121,18 +121,21 @@
             tempRel = []
             is3D = true;
 
-            Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
-
+            Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').backgroundColor('#ffffff').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
+            Graph.backgroundColor('rgba(0, 255, 0, 0.6)');
+            
             function switch2D() {
                 is3D = false;
                 console.log("Switch to 2D");
                 Graph = ForceGraph()(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').backgroundColor('#ffffff').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1).linkColor(() => "#000000").linkWidth(() => 0.5);
+                Graph.backgroundColor('rgba(0, 255, 0, 0.6)');
             }
 
             function switch3D() {
                 is3D = true;
                 console.log("Switch to 3D");
                 Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').backgroundColor('#ffffff').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1).linkColor(() => "#000000").linkWidth(() => 0.5);
+                Graph.backgroundColor('rgba(0, 255, 0, 0.6)');
             }
 
             // Mouse click graph interactions
