@@ -1,7 +1,6 @@
 <html>
     <head>
         <title>GraphIT - Monitoring Graph</title>
-        <script type="text/javascript" src="https://js-cdn.dynatrace.com/jstag/148709fdc4b/bf74387hfy/6cc34c2afe611228_complete.js" crossorigin="anonymous"></script>
         
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
@@ -125,19 +124,15 @@
             Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1);
 
             function switch2D() {
-                action = dtrum.enterAction('switch 2D');
                 is3D = false;
                 console.log("Switch to 2D");
                 Graph = ForceGraph()(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').backgroundColor('#ffffff').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1).linkColor(() => "#000000").linkWidth(() => 0.5);
-                dtrum.leaveAction(action);
             }
 
             function switch3D() {
-                action = dtrum.enterAction('switch 3D');
                 is3D = true;
                 console.log("Switch to 3D");
                 Graph = ForceGraph3D({'controlType' : 'orbit'})(document.getElementById('graph')).graphData(gData).onBackgroundClick(nodeBackgroundClick).onNodeClick(nodeLeftClick).onNodeRightClick(nodeRightClick).nodeLabel('displayName').nodeAutoColorBy('group').backgroundColor('#ffffff').linkDirectionalArrowLength(3.5).linkDirectionalArrowRelPos(1).linkColor(() => "#000000").linkWidth(() => 0.5);
-                dtrum.leaveAction(action);
             }
 
             // Mouse click graph interactions
@@ -145,7 +140,6 @@
             // Left click should show the properties and relationships as an overlay
             function nodeLeftClick(node, event) {
                 console.log("Left click: show properties");
-                action = dtrum.enterAction('show properties');
                 fetchSingleEntity(node.id, addEntityToGraph);
                 showPropertyDialogData = {'node' : node.id, 'event' : event};
             }
@@ -161,14 +155,12 @@
             }
 
             function followEntityRelationship(direction, entityId, relationship) {
-                action = dtrum.enterAction('load relationship ' + relationship);
                 entityJson = entityIndex[entityId];
                 entityJson[direction][relationship].forEach(rel => {
                     if(!(rel.id in entityIndex)) {
                         fetchSingleEntity(rel.id, addEntityToGraph)
                     }
                 });
-                dtrum.leaveAction(action);
             }
 
             function showQueryError(msg) {
@@ -187,7 +179,6 @@
 
             function hideProgressSpinner() {
                 document.getElementById('progress-spinner').style.display = 'none';
-                dtrum.leaveAction(action);
             }
 
             // Show entity properties pop up
@@ -302,9 +293,7 @@
                 tempRel = []
                 // now fetch
                 q = document.getElementById("diag-query").value;
-                // report action to Dynatrace
-                action = dtrum.enterAction('' + q);
-                //
+                
                 fetchGraph(q, pageResult)
             }
 
@@ -383,7 +372,7 @@
                     if (this.readyState == 4 && this.status == 200) {
                         evjson = JSON.parse(oReq.responseText);
                         callback(evjson);
-                        dtrum.leaveAction(action);
+                        
                     }
                 };
                 oReq.open("GET", encodeURI(url));
